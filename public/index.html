@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Web Terminal</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/xterm/css/xterm.css" />
+
+  <style>
+    body, html {
+      margin: 0;
+      height: 100%;
+      background: #000;
+      font-family: monospace;
+    }
+    #terminal {
+      width: 100%;
+      height: 100vh;
+    }
+  </style>
+</head>
+<body>
+  <div id="terminal"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://unpkg.com/xterm/lib/xterm.js"></script>
+
+  <script>
+    const socket = io();
+    const term = new Terminal({ cursorBlink: true, rows: 24 });
+    term.open(document.getElementById('terminal'));
+
+    term.onData(e => {
+      socket.emit("terminal.keystroke", e);
+    });
+
+    socket.on("terminal.incomingData", data => {
+      term.write(data);
+    });
+
+    window.addEventListener("resize", () => {
+      socket.emit("resize", { cols: term.cols, rows: term.rows });
+    });
+
+    term.write("🌐 Web Terminal Connected\n");
+    term.write("Ketik perintah Linux seperti biasa.\n");
+    term.write("Contoh install Node.js 24:\n");
+    term.write("   nvm install 24\n\n");
+  </script>
+</body>
+</html>
